@@ -1,0 +1,374 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro Ninho da Aguia</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    button {
+      background-color: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #myModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-content {
+      text-align: center;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover {
+      color: #555;
+      cursor: pointer;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    td:last-child {
+      text-align: center;
+    }
+
+    td:last-child button {
+      margin-right: 5px;
+    }
+
+    #searchBox {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      margin-bottom: 20px;
+    }
+
+    #printButton {
+      background-color: #008CBA;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #printButton:hover {
+      background-color: #0077A3;
+    }
+
+    /* Estilos para o formulário de impressão */
+    @media print {
+      body {
+        background-color: #fff;
+      }
+
+      h2 {
+        color: #333;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      strong {
+        font-weight: bold;
+      }
+
+      /* Ajustar o formato da data de nascimento */
+      p strong:after {
+        content: ':';
+        display: inline-block;
+        margin-right: 5px;
+      }
+
+      #dataNascimento strong:after {
+        content: '';
+      }
+
+      #dataNascimento {
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h2>Cadastro Ninho da Aguia</h2>
+
+<button onclick="openForm()">Cadastrar Nova Pessoa</button>
+
+<div id="myModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeForm()">&times;</span>
+    <h3>Cadastro Ninho da Aguia</h3>
+    <form id="cadastroForm">
+      <label for="nome">Nome:</label>
+      <input type="text" id="nome" name="nome" required>
+
+      <label for="dataNascimento">Data de Nascimento:</label>
+      <input type="date" id="dataNascimento" name="dataNascimento" required>
+
+      <label for="cpf">CPF:</label>
+      <input type="text" id="cpf" name="cpf" required>
+
+      <label for="nomeMae">Nome da Mãe:</label>
+      <input type="text" id="nomeMae" name="nomeMae">
+
+      <label for="nomePai">Nome do Pai:</label>
+      <input type="text" id="nomePai" name="nomePai">
+
+      <label for="endereco">Endereço:</label>
+      <input type="text" id="endereco" name="endereco">
+
+      <label for="telefone">Telefone para Contato:</label>
+      <input type="text" id="telefone" name="telefone">
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email">
+
+      <button type="button" onclick="salvarCadastro()">Salvar</button>
+    </form>
+  </div>
+</div>
+
+<input type="text" id="searchBox" oninput="filtrarCadastros()" placeholder="Pesquisar por nome">
+
+<table id="tabela">
+  <tr>
+    <th>Nome</th>
+    <th>Data de Nascimento</th>
+    <th>CPF</th>
+    <th>Nome da Mãe</th>
+    <th>Nome do Pai</th>
+    <th>Endereço</th>
+    <th>Telefone</th>
+    <th>Email</th>
+    <th>Ações</th>
+  </tr>
+  <!-- Dados da tabela serão preenchidos dinamicamente aqui -->
+</table>
+
+<script>
+  // Função para carregar os cadastros salvos no localStorage ao iniciar a página
+  window.onload = function() {
+    carregarCadastros();
+  };
+
+  function openForm() {
+    document.getElementById("myModal").style.display = "block";
+  }
+
+  function closeForm() {
+    document.getElementById("myModal").style.display = "none";
+  }
+
+  function salvarCadastro() {
+    var nome = document.getElementById("nome").value;
+    var dataNascimento = document.getElementById("dataNascimento").value;
+    var cpf = document.getElementById("cpf").value;
+    var nomeMae = document.getElementById("nomeMae").value;
+    var nomePai = document.getElementById("nomePai").value;
+    var endereco = document.getElementById("endereco").value;
+    var telefone = document.getElementById("telefone").value;
+    var email = document.getElementById("email").value;
+
+    var cadastro = {
+      nome: nome,
+      dataNascimento: dataNascimento,
+      cpf: cpf,
+      nomeMae: nomeMae,
+      nomePai: nomePai,
+      endereco: endereco,
+      telefone: telefone,
+      email: email
+    };
+
+    // Recuperar os cadastros existentes ou inicializar um array vazio
+    var cadastros = JSON.parse(localStorage.getItem("cadastros")) || [];
+
+    // Adicionar o novo cadastro ao array
+    cadastros.push(cadastro);
+
+    // Salvar o array atualizado no localStorage
+    localStorage.setItem("cadastros", JSON.stringify(cadastros));
+
+    // Atualizar a tabela
+    carregarCadastros();
+
+    // Limpar o formulário e fechar a janela modal
+    document.getElementById("cadastroForm").reset();
+    closeForm();
+  }
+
+  function carregarCadastros() {
+    var cadastros = JSON.parse(localStorage.getItem("cadastros")) || [];
+    var table = document.getElementById("tabela");
+
+    // Limpar a tabela antes de recarregar os cadastros
+    table.innerHTML = '<tr><th>Nome</th><th>Data de Nascimento</th><th>CPF</th><th>Nome da Mãe</th><th>Nome do Pai</th><th>Endereço</th><th>Telefone</th><th>Email</th><th>Ações</th></tr>';
+
+    // Preencher a tabela com os cadastros salvos
+    for (var i = 0; i < cadastros.length; i++) {
+      var newRow = table.insertRow(table.rows.length);
+      var cell1 = newRow.insertCell(0);
+      var cell2 = newRow.insertCell(1);
+      var cell3 = newRow.insertCell(2);
+      var cell4 = newRow.insertCell(3);
+      var cell5 = newRow.insertCell(4);
+      var cell6 = newRow.insertCell(5);
+      var cell7 = newRow.insertCell(6);
+      var cell8 = newRow.insertCell(7);
+      var cell9 = newRow.insertCell(8);
+      var cell10 = newRow.insertCell(9);
+
+      cell1.innerHTML = cadastros[i].nome;
+      cell2.innerHTML = formatarData(cadastros[i].dataNascimento);
+      cell3.innerHTML = cadastros[i].cpf;
+      cell4.innerHTML = cadastros[i].nomeMae;
+      cell5.innerHTML = cadastros[i].nomePai;
+      cell6.innerHTML = cadastros[i].endereco;
+      cell7.innerHTML = cadastros[i].telefone;
+      cell8.innerHTML = cadastros[i].email;
+      cell9.innerHTML = '<button onclick="editarCadastro(' + i + ')">Editar</button>' +
+                        '<button onclick="excluirCadastro(' + i + ')">Excluir</button>';
+      cell10.innerHTML = '<button onclick="imprimirCadastro(' + i + ')">Imprimir</button>';
+    }
+  }
+
+  function editarCadastro(index) {
+    var cadastros = JSON.parse(localStorage.getItem("cadastros")) || [];
+    var cadastro = cadastros[index];
+
+    document.getElementById("nome").value = cadastro.nome;
+    document.getElementById("dataNascimento").value = cadastro.dataNascimento;
+    document.getElementById("cpf").value = cadastro.cpf;
+    document.getElementById("nomeMae").value = cadastro.nomeMae;
+    document.getElementById("nomePai").value = cadastro.nomePai;
+    document.getElementById("endereco").value = cadastro.endereco;
+    document.getElementById("telefone").value = cadastro.telefone;
+    document.getElementById("email").value = cadastro.email;
+
+    // Remover o cadastro da lista
+    cadastros.splice(index, 1);
+
+    // Atualizar o localStorage
+    localStorage.setItem("cadastros", JSON.stringify(cadastros));
+
+    // Atualizar a tabela
+    carregarCadastros();
+
+    // Abrir a janela modal
+    openForm();
+  }
+
+  function excluirCadastro(index) {
+    var cadastros = JSON.parse(localStorage.getItem("cadastros")) || [];
+
+    // Remover o cadastro da lista
+    cadastros.splice(index, 1);
+
+    // Atualizar o localStorage
+    localStorage.setItem("cadastros", JSON.stringify(cadastros));
+
+    // Atualizar a tabela
+    carregarCadastros();
+  }
+
+  function imprimirCadastro(index) {
+    var cadastros = JSON.parse(localStorage.getItem("cadastros")) || [];
+    var cadastro = cadastros[index];
+
+    var printWindow = window.open('', '_blank');
+    printWindow.document.write('<html><head><title>Formulário de Cadastro</title>');
+    printWindow.document.write('<style>');
+    printWindow.document.write('body { font-family: Arial, sans-serif; margin: 20px; }');
+    printWindow.document.write('h2 { text-align: center; color: #333; }');
+    printWindow.document.write('p { margin: 0; }');
+    printWindow.document.write('strong { font-weight: bold; }');
+    printWindow.document.write('</style>');
+    printWindow.document.write('</head><body>');
+
+    printWindow.document.write('<h2>Formulário de Cadastro</h2>');
+    printWindow.document.write('<p><strong>Nome:</strong> ' + cadastro.nome + '</p>');
+    printWindow.document.write('<p><strong>Data de Nascimento:</strong> ' + formatarData(cadastro.dataNascimento) + '</p>');
+    printWindow.document.write('<p><strong>CPF:</strong> ' + cadastro.cpf + '</p>');
+    printWindow.document.write('<p><strong>Nome da Mãe:</strong> ' + cadastro.nomeMae + '</p>');
+    printWindow.document.write('<p><strong>Nome do Pai:</strong> ' + cadastro.nomePai + '</p>');
+    printWindow.document.write('<p><strong>Endereço:</strong> ' + cadastro.endereco + '</p>');
+    printWindow.document.write('<p><strong>Telefone:</strong> ' + cadastro.telefone + '</p>');
+    printWindow.document.write('<p><strong>Email:</strong> ' + cadastro.email + '</p>');
+
+    printWindow.document.write('</body></html>');
+
+    printWindow.document.close();
+    printWindow.print();
+  }
+
+  function formatarData(data) {
+    var partes = data.split("-");
+    return partes[2] + '-' + partes[1] + '-' + partes[0];
+  }
+</script>
+
+</body>
+</html>
